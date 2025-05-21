@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Social Connection Survey</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="task.js" defer></script>
+</head>
+<body>
+  <div id="survey-container">
+    <div id="phase1">
+      <div class="progress" id="progress-bar"></div>
+      <div id="question-area"></div>
+      <div style="text-align:center;">
+        <button id="next-btn">Next</button>
+      </div>
+    </div>
+    <div id="phase2">
+        <div id="initials-list"></div>
+        <div id="canvas-container" style="position: relative; margin-top: 20px;">
+          <canvas id="drop-canvas" width="600" height="600"></canvas>
+        </div>
+        <div id="button-group" style="text-align: center; margin-top: 20px;">
+            <button id="eraser-toggle">Eraser</button>
+            <div style="margin-top: 10px;">
+                <button id="submit-btn" style="display: none;">Submit</button>
+            </div>
+        </div>
+    </div>
+  </div>
+</body>
+</html>
