@@ -1,5 +1,5 @@
 // === PHASE 1 CONFIG ===
-const maxRepeats = 3;
+const maxRepeats = 13;
 let currentStep = 0;
 let responses = [];
 
@@ -9,6 +9,36 @@ const relationships = [
 "Close neighbors", "Member of religious group",
 "Member of group without religious affiliations"
 ];
+
+let participantId = '';
+
+function askPartid() {
+    questionArea.innerHTML = `
+        <label>Please enter your Participant ID:</label>
+        <input type="text" id="partid-input" placeholder="e.g., P001">
+        <div id="partid-error" style="color:red; font-size:14px;"></div>
+    `;
+    nextBtn.style.display = 'none';
+    nextBtn.onclick = savePartid;
+
+    const input = document.getElementById('partid-input');
+    input.addEventListener('input', () => {
+        const val = input.value.trim();
+        document.getElementById('partid-error').textContent = val ? "" : "Participant ID cannot be empty.";
+        nextBtn.style.display = val ? 'inline-block' : 'none';
+    });
+}
+
+function savePartid() {
+    const input = document.getElementById('partid-input');
+    participantId = input.value.trim();
+
+    // Store ID in localStorage immediately
+    localStorage.setItem("participantId", participantId);
+
+    showPhase1();
+}
+
 
 const questionArea = document.getElementById('question-area');
 const nextBtn = document.getElementById('next-btn');
@@ -177,7 +207,6 @@ function launchPhase2() {
 
     drawAllLines();
     checkSubmitEligibility();
-
     });
 
     function createMovableBox(name, x, y) {
@@ -313,23 +342,39 @@ function launchPhase2() {
     }
 
 
-    submitBtn.onclick = () => {
+    submitBtn.onclick = async () => {
         const result = getPhase2Results();
     
-        const header = ['name', 'relationship', 'x', 'y', 'connectedTo'];
+        const header = 'name,relationship,x,y,connectedTo';
         const rows = result.map(r =>
-        [r.name, r.relationship, r.x, r.y, r.connectedTo.join(';')].join(',')
+            `${r.name},${r.relationship},${r.x},${r.y},${r.connectedTo.join(';')}`
         );
-        const csvContent = [header.join(','), ...rows].join('\n');
+        const csv = [header, ...rows].join("\n");
+        const blob = new Blob([csv], { type: "text/csv" });
     
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'phase2_results.csv';
-        a.click();
-        URL.revokeObjectURL(url);
+        const filename = `brokerage_${participantId}.csv`;
+        const formData = new FormData();
+        formData.append("file", blob, filename);
+    
+        try {
+            const response = await fetch(`https://srnpro.vercel.app/api/upload-runsheet?key=${filename}`, {
+                method: "POST",
+                body: formData,
+            });
+    
+            if (!response.ok) throw new Error("Upload failed");
+            const result = await response.json();
+            console.log("Upload response:", result);
+    
+            // Save ID to localStorage and redirect
+            localStorage.setItem("participantId", participantId);
+            window.location.href = "https://jerryguo2001.github.io/SRN_Pro/"; 
+        } catch (err) {
+            console.error("Upload error:", err);
+            alert("Upload failed: " + err.message);
+        }
     };
+    
 
 
     // Save final layout + connections into responses
@@ -350,10 +395,6 @@ function launchPhase2() {
 
 
 
+// Start with asking for Participant ID
+askPartid();
 
-
-
-
-
-// Start Phase 1
-showPhase1();
