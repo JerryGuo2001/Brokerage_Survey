@@ -32,10 +32,6 @@ function askPartid() {
 function savePartid() {
     const input = document.getElementById('partid-input');
     participantId = input.value.trim();
-
-    // Store ID in localStorage immediately
-    localStorage.setItem("participantId", participantId);
-
     showPhase1();
 }
 
@@ -365,10 +361,8 @@ function launchPhase2() {
             if (!response.ok) throw new Error("Upload failed");
             const result = await response.json();
             console.log("Upload response:", result);
-    
-            // Save ID to localStorage and redirect
-            localStorage.setItem("participantId", participantId);
-            window.location.href = "https://jerryguo2001.github.io/SRN_Pro/"; 
+            // Redirect with ID as query parameter
+            window.location.href = `https://jerryguo2001.github.io/SRN_Pro/?ParticipantId=${encodeURIComponent(participantId)}`;
         } catch (err) {
             console.error("Upload error:", err);
             alert("Upload failed: " + err.message);
