@@ -1,5 +1,5 @@
 // === PHASE 1 CONFIG ===
-const maxRepeats = 13;
+const maxRepeats = 3;
 let currentStep = 0;
 let responses = [];
 
