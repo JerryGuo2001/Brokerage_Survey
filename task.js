@@ -361,8 +361,9 @@ function launchPhase2() {
             if (!response.ok) throw new Error("Upload failed");
             const result = await response.json();
             console.log("Upload response:", result);
-            // Redirect with ID as query parameter
-            window.location.href = `https://jerryguo2001.github.io/SRN_Pro/?ParticipantId=${encodeURIComponent(participantId)}`;
+            // Hide everything else and show thank-you message
+            document.getElementById("phase2").style.display = "none";
+            document.getElementById("thanks").style.display = "block";
         } catch (err) {
             console.error("Upload error:", err);
             alert("Upload failed: " + err.message);
@@ -391,4 +392,12 @@ function launchPhase2() {
 
 // Start with asking for Participant ID
 askPartid();
+
+const urlParams = new URLSearchParams(window.location.search);
+const paramId = urlParams.get("ParticipantId");
+if (paramId) {
+    participantId = paramId;
+    showPhase1();  // skip manual ID input
+}
+
 
