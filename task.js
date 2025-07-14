@@ -10,29 +10,53 @@ const relationships = [
 "Member of group without religious affiliations"
 ];
 
-let participantId = '';
+let participantId = '';  // global
 
 function askPartid() {
-    questionArea.innerHTML = `
-        <label>Please enter your Participant ID:</label>
-        <input type="text" id="partid-input" placeholder="e.g., P001">
-        <div id="partid-error" style="color:red; font-size:14px;"></div>
-    `;
-    nextBtn.style.display = 'none';
-    nextBtn.onclick = savePartid;
+    const urlParams = new URLSearchParams(window.location.search);
+    const workerId = urlParams.get("worker_id");
 
-    const input = document.getElementById('partid-input');
-    input.addEventListener('input', () => {
-        const val = input.value.trim();
-        document.getElementById('partid-error').textContent = val ? "" : "Participant ID cannot be empty.";
-        nextBtn.style.display = val ? 'inline-block' : 'none';
-    });
+    if (workerId) {
+        participantId = workerId;
+        nextBtn.style.display = 'inline-block';
+        nextBtn.onclick = () => {
+            console.log("Auto-loaded Participant ID:", participantId);
+            // Proceed to next step
+            savePartid();
+        };
+        nextBtn.click();  // auto-advance
+    } else {
+        // Manual input
+        questionArea.innerHTML = `
+            <label>Please enter your Participant ID:</label>
+            <input type="text" id="partid-input" placeholder="e.g., P001">
+            <div id="partid-error" style="color:red; font-size:14px;"></div>
+        `;
+        nextBtn.style.display = 'none';
+        nextBtn.onclick = savePartid;
+
+        const input = document.getElementById('partid-input');
+        input.addEventListener('input', () => {
+            const val = input.value.trim();
+            document.getElementById('partid-error').textContent = val ? "" : "Participant ID cannot be empty.";
+            nextBtn.style.display = val ? 'inline-block' : 'none';
+        });
+    }
 }
 
 function savePartid() {
-    const input = document.getElementById('partid-input');
-    participantId = input.value.trim();
+    if (!participantId) {
+        const input = document.getElementById('partid-input');
+        participantId = input.value.trim();
+    }
+
+    if (!participantId) {
+        document.getElementById('partid-error').textContent = "Participant ID cannot be empty.";
+        return;
+    }
+    console.log("Participant ID set to:", participantId);
     showPhase1();
+    // Move to the next step in your flow
 }
 
 
@@ -340,35 +364,37 @@ function launchPhase2() {
 
     submitBtn.onclick = async () => {
         const result = getPhase2Results();
-    
+
         const header = 'name,relationship,x,y,connectedTo';
         const rows = result.map(r =>
             `${r.name},${r.relationship},${r.x},${r.y},${r.connectedTo.join(';')}`
         );
         const csv = [header, ...rows].join("\n");
         const blob = new Blob([csv], { type: "text/csv" });
-    
+
         const filename = `brokerage_${participantId}.csv`;
         const formData = new FormData();
         formData.append("file", blob, filename);
-    
+
         try {
             const response = await fetch(`https://srnpro.vercel.app/api/upload-runsheet?key=${filename}`, {
                 method: "POST",
                 body: formData,
             });
-    
+
             if (!response.ok) throw new Error("Upload failed");
             const result = await response.json();
             console.log("Upload response:", result);
-            // Hide everything else and show thank-you message
-            document.getElementById("phase2").style.display = "none";
-            document.getElementById("thanks").style.display = "block";
+
+            // Redirect to the next page with worker_id in query string
+            window.location.href = `demo_survey.html.html?worker_id=${participantId}`;
+
         } catch (err) {
             console.error("Upload error:", err);
             alert("Upload failed: " + err.message);
         }
     };
+
     
 
 

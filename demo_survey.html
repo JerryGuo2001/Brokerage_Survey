@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post-Experiment Survey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid #e1e8ed;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        select[multiple].form-control {
+            height: auto;
+            min-height: 120px;
+        }
+
+        .section-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            margin: 40px -30px 30px -30px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .button-container {
+            text-align: center;
+            padding: 30px;
+            background-color: #f8f9fa;
+            margin: 40px -30px -40px -30px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .help-text {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .rating-scale {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .rating-scale span {
+            text-align: center;
+            flex: 1;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .form-container {
+                padding: 30px 20px;
+            }
+
+            .section-title {
+                margin: 30px -20px 20px -20px;
+                padding: 15px 20px;
+            }
+
+            .button-container {
+                margin: 30px -20px -30px -20px;
+                padding: 20px;
+            }
+
+            .btn {
+                padding: 12px 30px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Custom styling for specific elements */
+        input[type="number"] {
+            /* Remove spinner arrows for number inputs */
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Animation for form elements */
+        .form-group {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.2s; }
+        .form-group:nth-child(3) { animation-delay: 0.3s; }
+        .form-group:nth-child(4) { animation-delay: 0.4s; }
+        .form-group:nth-child(5) { animation-delay: 0.5s; }
+        .form-group:nth-child(6) { animation-delay: 0.6s; }
+        .form-group:nth-child(7) { animation-delay: 0.7s; }
+        .form-group:nth-child(8) { animation-delay: 0.8s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Post-Experiment Survey</h1>
+            <p>Thank you for participating in our study! Please complete this brief survey.</p>
+        </div>
+
+        <div class="form-container">
+            <form id="surveyForm" name="surveyForm" onsubmit="return false">
+                <div class="form-group">
+                    <label for="whatTested">
+                        In one or two sentences, what did you think we were testing? <span class="required">*</span>
+                    </label>
+                    <textarea required class="form-control response" id="whatTested" name="whatTested" rows="3" placeholder="Please describe your understanding of what this experiment was about..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="estimatedPerformance">
+                        How well do you think you did, out of 100%? <span class="required">*</span>
+                    </label>
+                    <input required class="form-control response" id="estimatedPerformance" name="estimatedPerformance" type="number" min="1" max="100" placeholder="Enter a number between 1-100">
+                    <div class="rating-scale">
+                        <span>1 = Terrible</span>
+                        <span>50 = Average</span>
+                        <span>100 = Perfect</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="strategies">
+                        In one or two sentences, did you use any particular strategies? <span class="required">*</span>
+                    </label>
+                    <textarea required class="form-control response" id="strategies" name="strategies" rows="3" placeholder="Please describe any strategies you used during the experiment..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="interruption">
+                        Did you interrupt your completion of the study in any way? <span class="required">*</span>
+                    </label>
+                    <select required class="form-control response" id="interruption" name="interruption">
+                        <option value="NA">Please select an option</option>
+                        <option>Yes, I interrupted the task.</option>
+                        <option>No, I did not interrupt the task.</option>
+                    </select>
+                    <div class="help-text">Your work will still be accepted even if you answer "Yes" here. Please be honest!</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="participatedBefore">
+                        Have you ever participated in this particular study before? <span class="required">*</span>
+                    </label>
+                    <select required class="form-control response" id="participatedBefore" name="participatedBefore">
+                        <option value="NA">Please select an option</option>
+                        <option>Yes</option>
+                        <option>No</option>
+                    </select>
+                    <div class="help-text">Your work will still be accepted even if you answer "Yes" here. Please be honest!</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="issues">
+                        Was any part of the procedure unclear? Did you have any problems completing the task? <span class="required">*</span>
+                    </label>
+                    <textarea required class="form-control response" id="issues" name="issues" rows="3" placeholder="Please describe any issues or unclear instructions..."></textarea>
+                    <div class="help-text">Your work will be accepted regardless of your answer. Please be honest!</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="seriousness">
+                        How well did you pay attention to the experiment? <span class="required">*</span>
+                    </label>
+                    <input required class="form-control response" id="seriousness" name="seriousness" type="number" min="1" max="100" placeholder="Enter a number between 1-100">
+                    <div class="rating-scale">
+                        <span>1 = Very Distracted</span>
+                        <span>50 = Somewhat Focused</span>
+                        <span>100 = Very Focused</span>
+                    </div>
+                    <div class="help-text">This will not affect whether you receive credit or compensation.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="comments">
+                        Do you have any other comments you would like to add? <span class="required">*</span>
+                    </label>
+                    <textarea required class="form-control response" id="comments" name="comments" rows="3" placeholder="Feel free to share any additional thoughts or feedback..."></textarea>
+                </div>
+
+                <div class="section-title">Demographics</div>
+
+                <div class="form-group">
+                    <label for="age">
+                        What is your age? <span class="required">*</span>
+                    </label>
+                    <input required class="form-control response" id="age" name="age" type="number" min="18" max="110" placeholder="Enter your age">
+                </div>
+
+                <div class="form-group">
+                    <label for="race">
+                        What is your race? You may select more than one option. <span class="required">*</span>
+                    </label>
+                    <select required multiple="multiple" class="form-control response" id="race" name="race">
+                        <option>Black/African American</option>
+                        <option>East Asian</option>
+                        <option>Latinx/a/o or Hispanic</option>
+                        <option>Middle Eastern</option>
+                        <option>Native American/American Indian</option>
+                        <option>Native Hawaiian or Other Pacific Islander</option>
+                        <option>South Asian</option>
+                        <option>Southeast Asian</option>
+                        <option>White</option>
+                        <option>Race/ethnicity not listed</option>
+                        <option>Prefer not to say</option>
+                    </select>
+                    <div class="help-text">Hold Ctrl (or Cmd on Mac) to select multiple options</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="sex">
+                        What is your sex? <span class="required">*</span>
+                    </label>
+                    <select required class="form-control response" id="sex" name="sex">
+                        <option value="NA">Please select an option</option>
+                        <option>Female</option>
+                        <option>Male</option>
+                        <option>Intersex</option>
+                        <option>Sex not listed</option>
+                        <option>Prefer not to say</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="gender">
+                        What is your gender? <span class="required">*</span>
+                    </label>
+                    <input required class="form-control response" id="gender" name="gender" type="text" minlength="2" maxlength="100" placeholder="Please specify your gender identity">
+                </div>
+            </form>
+        </div>
+
+        <div class="button-container">
+            <button id="continueButton" class="btn">Submit Survey</button>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('surveyForm');
+            const submitBtn = document.getElementById('continueButton');
+
+            // Get worker_id from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const workerId = urlParams.get('worker_id');
+
+            // Form validation
+            submitBtn.addEventListener('click', function() {
+                const requiredFields = form.querySelectorAll('[required]');
+                let isValid = true;
+
+                requiredFields.forEach(field => {
+                    if (!field.value || field.value === 'NA') {
+                        isValid = false;
+                        field.style.borderColor = '#e74c3c';
+                        field.style.backgroundColor = '#fdf2f2';
+                    } else {
+                        field.style.borderColor = '#e1e8ed';
+                        field.style.backgroundColor = '#f8f9fa';
+                    }
+                });
+
+                if (isValid) {
+                    // Collect form data
+                    const formData = new FormData(form);
+                    const surveyData = {};
+                    
+                    // Convert FormData to object
+                    for (let [key, value] of formData.entries()) {
+                        if (key === 'race') {
+                            // Handle multiple select for race
+                            if (!surveyData[key]) {
+                                surveyData[key] = [];
+                            }
+                            surveyData[key].push(value);
+                        } else {
+                            surveyData[key] = value;
+                        }
+                    }
+                    
+                    // Add worker_id to survey data
+                    surveyData.worker_id = workerId;
+                    
+                    // Save survey data to localStorage (optional, for backup)
+                    localStorage.setItem(`surveyData_${workerId}`, JSON.stringify(surveyData));
+                    
+                    // Get pending submission data from localStorage
+                    const pendingSubmissionData = localStorage.getItem(`pendingSubmissionData_${workerId}`);
+                    if (pendingSubmissionData) {
+                        const submissionData = JSON.parse(pendingSubmissionData);
+                        
+                        // Add survey data to submission
+                        submissionData.survey_data = surveyData;
+                        
+                        // Submit all data (recall + survey) to backend
+                        fetch("/output", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(submissionData)
+                        })
+                        .then(res => {
+                            if (!res.ok) {
+                                return res.text().then(text => {
+                                    throw new Error(`HTTP error! status: ${res.status}, response: ${text}`);
+                                });
+                            }
+                            return res.json();
+                        })
+                        .then(data => {
+                            console.log("✅ All data saved (recall + survey):", data);
+                            
+                            // Clear all localStorage data
+                            localStorage.removeItem(`pendingSubmissionData_${workerId}`);
+                            localStorage.removeItem(`recallNetworks_${workerId}`);
+                            localStorage.removeItem(`surveyData_${workerId}`);
+                            
+                            // Redirect to thanks page
+                            window.location.href = `/exp/thanks.html?worker_id=${workerId}`;
+                        })
+                        .catch(err => {
+                            console.error("❌ Failed to save data:", err);
+                            alert("Error saving your data. Please try again.");
+                        });
+                    } else {
+                        // Fallback: just redirect if no pending data found
+                        console.warn("No pending submission data found, redirecting anyway");
+                        window.location.href = `/exp/thanks.html?worker_id=${workerId}`;
+                    }
+                } else {
+                    alert('Please fill in all required fields marked with *');
+                }
+            });
+
+            // Real-time validation feedback
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    if (this.hasAttribute('required') && (!this.value || this.value === 'NA')) {
+                        this.style.borderColor = '#e74c3c';
+                        this.style.backgroundColor = '#fdf2f2';
+                    } else {
+                        this.style.borderColor = '#e1e8ed';
+                        this.style.backgroundColor = '#f8f9fa';
+                    }
+                });
+
+                input.addEventListener('focus', function() {
+                    this.style.borderColor = '#667eea';
+                    this.style.backgroundColor = 'white';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
