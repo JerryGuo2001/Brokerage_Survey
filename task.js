@@ -1,5 +1,4 @@
 // === PHASE 1 CONFIG (Spreadsheet-like grid input) ===
-const maxRepeats = 10;  // kept for structure; not used in grid flow
 let currentStep = 0;
 let responses = [];
 
@@ -72,31 +71,28 @@ function showPhase1() {
 function showGridEntry() {
   updateProgress("Fill at least 5 rows: initials + relationship");
 
-  const relOptions = relationships.map(r => `<option value="${r}">${r}</option>`).join('');
-  questionArea.innerHTML = `
-    <div style="margin-bottom:10px;">
-      <strong>Allowed relationships:</strong> ${relationships.join(", ")}
-    </div>
-
+    const relOptions = relationships.map(r => `<option value="${r}">${r}</option>`).join('');
+    questionArea.innerHTML = `
     <div style="overflow:auto;">
-      <table id="grid-table" style="width:100%; border-collapse:collapse;">
+        <table id="grid-table" style="width:100%; border-collapse:collapse;">
         <thead>
-          <tr>
-            <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px;">initials</th>
+            <tr>
+            <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px; padding-right:16px;">initials</th>
             <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px;">relationship</th>
             <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px; width:60px;">&nbsp;</th>
-          </tr>
+            </tr>
         </thead>
         <tbody id="grid-body"></tbody>
-      </table>
+        </table>
     </div>
 
     <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
-      <button id="add-row-btn" type="button">Add row</button>
-      <span id="grid-msg" style="color:#999; font-size:14px;"></span>
-      <span id="grid-err" style="color:red; font-size:14px; margin-left:auto;"></span>
+        <button id="add-row-btn" type="button">Add row</button>
+        <span id="grid-msg" style="color:#999; font-size:14px;"></span>
+        <span id="grid-err" style="color:red; font-size:14px; margin-left:auto;"></span>
     </div>
-  `;
+    `;
+
 
   nextBtn.style.display = 'none';
   nextBtn.onclick = proceedAfterGrid;
@@ -110,6 +106,7 @@ function showGridEntry() {
 
     const tdInit = document.createElement('td');
     tdInit.style.padding = '6px';
+    tdInit.style.paddingRight = '16px';
     const initInput = document.createElement('input');
     initInput.type = 'text';
     initInput.placeholder = 'e.g., A.S.';
@@ -120,6 +117,7 @@ function showGridEntry() {
 
     const tdRel = document.createElement('td');
     tdRel.style.padding = '6px';
+    tdRel.style.paddingLeft = '4px';
     const sel = document.createElement('select');
     sel.innerHTML = `<option value="">Select</option>${relOptions}`;
     sel.value = relationship;
@@ -146,7 +144,7 @@ function showGridEntry() {
   };
 
   // Seed with 5 empty rows
-  for (let i = 0; i < 5; i++) body.appendChild(makeRow());
+  for (let i = 0; i < 10; i++) body.appendChild(makeRow());
 
   addBtn.addEventListener('click', () => {
     body.appendChild(makeRow());
