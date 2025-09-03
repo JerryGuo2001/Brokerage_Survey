@@ -8,7 +8,22 @@
 </head>
 <body>
   <div id="survey-container">
-    <div id="phase1">
+    <div id="intro">
+      <h2>Social Connection Survey</h2>
+      <p style="max-width:700px;margin:10px auto 16px;line-height:1.5;">
+        In the first step, please enter at least five contacts (initials + relationship).
+        In the second step, you will drag the initials into a canvas and connect any that
+        know each other (e.g., friend, family, spouse).
+      </p>
+      <p style="max-width:700px;margin:0 auto 16px;line-height:1.5;">
+        This study uses full screen to reduce distractions. You can exit full screen at any time with <em>Esc</em>.
+      </p>
+      <div style="text-align:center;">
+        <button id="start-btn">Start</button>
+      </div>
+    </div>
+
+    <div id="phase1" style="display:none;">
       <div class="progress" id="progress-bar"></div>
       <div id="question-area"></div>
       <div style="text-align:center;">

@@ -15,6 +15,41 @@ const questionArea = document.getElementById('question-area');
 const nextBtn = document.getElementById('next-btn');
 const progressBar = document.getElementById('progress-bar');
 
+function requestFullscreen() {
+  const el = document.documentElement;
+  if (el.requestFullscreen) return el.requestFullscreen();
+  if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+  if (el.mozRequestFullScreen) return el.mozRequestFullScreen();
+  if (el.msRequestFullscreen) return el.msRequestFullscreen();
+  // If fullscreen API not available, resolve immediately so we still proceed
+  return Promise.resolve();
+}
+
+function showIntro() {
+  const startBtn = document.getElementById('start-btn');
+  const intro = document.getElementById('intro');
+  const phase1 = document.getElementById('phase1');
+
+  // safety: if button already wired, don't double-bind
+  if (startBtn.dataset.bound) return;
+  startBtn.dataset.bound = "1";
+
+  startBtn.addEventListener('click', async () => {
+    try {
+      await requestFullscreen();
+    } catch (e) {
+      console.warn('Fullscreen request was blocked or failed:', e);
+      // we still proceed
+    }
+    // Move on to the normal flow
+    intro.style.display = 'none';
+    phase1.style.display = '';
+    askPartid();  // same worker_id logic as before
+  });
+}
+
+
+
 // ----------------- Worker/Participant ID intake (unchanged) -----------------
 function askPartid() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -496,7 +531,8 @@ function launchPhase2() {
 }
 
 // ----------------- Boot -----------------
-askPartid();
+showIntro();
+
 
 const urlParams = new URLSearchParams(window.location.search);
 const paramId = urlParams.get("ParticipantId");
