@@ -1,5 +1,5 @@
-// === PHASE 1 CONFIG (Now: CSV-like text entry) ===
-const maxRepeats = 10;  // kept for structure; not used in this flow
+// === PHASE 1 CONFIG (Spreadsheet-like grid input) ===
+const maxRepeats = 10;  // kept for structure; not used in grid flow
 let currentStep = 0;
 let responses = [];
 
@@ -64,181 +64,174 @@ function updateProgress(text = "") {
   progressBar.textContent = text;
 }
 
-// ----------------- NEW: CSV-like textarea entry -----------------
+// ----------------- NEW: Grid (Excel/Sheets-like) entry -----------------
 function showPhase1() {
-  showCSVTextbox();
+  showGridEntry();
 }
 
-function showCSVTextbox() {
-  updateProgress("Enter at least 5 lines: initials,relationship");
-  const relList = relationships.join(", ");
+function showGridEntry() {
+  updateProgress("Fill at least 5 rows: initials + relationship");
+
+  const relOptions = relationships.map(r => `<option value="${r}">${r}</option>`).join('');
   questionArea.innerHTML = `
-    <div>
-      <p><strong>Format:</strong> <code>initials,relationship</code></p>
-      <p><em>Allowed relationships:</em> ${relList}</p>
-      <textarea id="csv-text" rows="10" style="width:100%; box-sizing:border-box;"
-        placeholder="initials,relationship
-A.S.,Friend
-J.K.,Workmate
-M.T.,Parent
-L.Q.,Spouse
-R.B.,Schoolmate"></textarea>
-      <div id="csv-error" style="color:red; font-size:14px; margin-top:8px;"></div>
-      <div id="csv-preview" style="margin-top:12px;"></div>
+    <div style="margin-bottom:10px;">
+      <strong>Allowed relationships:</strong> ${relationships.join(", ")}
+    </div>
+
+    <div style="overflow:auto;">
+      <table id="grid-table" style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px;">initials</th>
+            <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px;">relationship</th>
+            <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px; width:60px;">&nbsp;</th>
+          </tr>
+        </thead>
+        <tbody id="grid-body"></tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+      <button id="add-row-btn" type="button">Add row</button>
+      <span id="grid-msg" style="color:#999; font-size:14px;"></span>
+      <span id="grid-err" style="color:red; font-size:14px; margin-left:auto;"></span>
     </div>
   `;
 
   nextBtn.style.display = 'none';
-  nextBtn.onclick = proceedAfterCSV;
+  nextBtn.onclick = proceedAfterGrid;
 
-  const ta = document.getElementById('csv-text');
-  ta.addEventListener('input', handleCSVTextChanged);
+  const body = document.getElementById('grid-body');
+  const addBtn = document.getElementById('add-row-btn');
+
+  // helpers
+  const makeRow = (initials = "", relationship = "") => {
+    const tr = document.createElement('tr');
+
+    const tdInit = document.createElement('td');
+    tdInit.style.padding = '6px';
+    const initInput = document.createElement('input');
+    initInput.type = 'text';
+    initInput.placeholder = 'e.g., A.S.';
+    initInput.value = initials;
+    initInput.style.width = '100%';
+    initInput.addEventListener('input', validateGrid);
+    tdInit.appendChild(initInput);
+
+    const tdRel = document.createElement('td');
+    tdRel.style.padding = '6px';
+    const sel = document.createElement('select');
+    sel.innerHTML = `<option value="">Select</option>${relOptions}`;
+    sel.value = relationship;
+    sel.addEventListener('change', validateGrid);
+    sel.style.width = '100%';
+    tdRel.appendChild(sel);
+
+    const tdDel = document.createElement('td');
+    tdDel.style.padding = '6px';
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.textContent = '−';
+    delBtn.title = 'Remove row';
+    delBtn.addEventListener('click', () => {
+      tr.remove();
+      validateGrid();
+    });
+    tdDel.appendChild(delBtn);
+
+    tr.appendChild(tdInit);
+    tr.appendChild(tdRel);
+    tr.appendChild(tdDel);
+    return tr;
+  };
+
+  // Seed with 5 empty rows
+  for (let i = 0; i < 5; i++) body.appendChild(makeRow());
+
+  addBtn.addEventListener('click', () => {
+    body.appendChild(makeRow());
+    validateGrid();
+  });
+
+  // Initial validation
+  validateGrid();
 }
 
-function handleCSVTextChanged() {
-  const text = document.getElementById('csv-text').value;
-  const errorDiv = document.getElementById('csv-error');
-  const previewDiv = document.getElementById('csv-preview');
-
-  errorDiv.textContent = "";
-  previewDiv.innerHTML = "";
-  responses = [];
-  nextBtn.style.display = 'none';
-
-  if (!text.trim()) return;
-
-  try {
-    const rows = parseCSVLike(text);
-    const validated = validateCSVRows(rows);
-    if (!validated.ok) {
-      errorDiv.textContent = validated.message;
-      return;
-    }
-    // map to internal responses structure {name, relationship}
-    responses = validated.rows.map(r => ({ name: r.initials, relationship: r.relationship }));
-
-    // Preview
-    const list = document.createElement('ul');
-    for (const r of responses) {
-      const li = document.createElement('li');
-      li.textContent = `${r.name} — ${r.relationship}`;
-      list.appendChild(li);
-    }
-    previewDiv.innerHTML = `<strong>Loaded ${responses.length} entries:</strong>`;
-    previewDiv.appendChild(list);
-
-    updateProgress(`Loaded ${responses.length} from your input`);
-    nextBtn.style.display = 'inline-block';
-  } catch (err) {
-    console.error(err);
-    errorDiv.textContent = "Failed to parse the input. Check commas and values.";
+function readGridRows() {
+  const rows = [];
+  const body = document.getElementById('grid-body');
+  const trs = Array.from(body.querySelectorAll('tr'));
+  for (const tr of trs) {
+    const inputs = tr.querySelectorAll('input, select');
+    const initials = (inputs[0].value || "").trim();
+    const relationship = (inputs[1].value || "").trim();
+    rows.push({ initials, relationship });
   }
+  return rows;
 }
 
-// Parse CSV-like text (supports commas or tabs; optional header)
-function parseCSVLike(text) {
-  const lines = text
-    .replace(/\r\n/g, "\n").replace(/\r/g, "\n")
-    .split("\n")
-    .map(l => l.trim())
-    .filter(l => l.length > 0);
+function validateGrid() {
+  const msgEl = document.getElementById('grid-msg');
+  const errEl = document.getElementById('grid-err');
+  const rows = readGridRows();
 
-  if (lines.length === 0) return [];
+  // Keep only filled rows for validation
+  const filled = rows.filter(r => r.initials !== "" || r.relationship !== "");
+  const complete = filled.filter(r => r.initials !== "" && r.relationship !== "");
 
-  // Peek header
-  const first = splitRow(lines[0]);
-  const header = first.map(h => h.trim().toLowerCase());
-  let startIdx = 0;
-  let hasHeader = header.includes("initials") && header.includes("relationship");
-
-  if (hasHeader) startIdx = 1;
-
-  const out = [];
-  for (let i = startIdx; i < lines.length; i++) {
-    const cols = splitRow(lines[i]);
-    let initials = (cols[0] || "").trim();
-    let relationship = (cols[1] || "").trim();
-
-    // If header present, try to map by index of those columns
-    if (hasHeader) {
-      const initialsIdx = header.indexOf("initials");
-      const relIdx = header.indexOf("relationship");
-      initials = (cols[initialsIdx] || "").trim();
-      relationship = (cols[relIdx] || "").trim();
-    }
-
-    if (!initials && !relationship) continue;
-    out.push({ initials, relationship });
-  }
-  return out;
-}
-
-// Split a row by comma or tab; basic quotes handling
-function splitRow(line) {
-  // Prefer commas; if not present but tabs exist, split on tabs
-  const hasComma = line.includes(",");
-  const hasTab = line.includes("\t");
-  if (!hasComma && hasTab) {
-    return line.split("\t");
-  }
-  // Simple CSV split with quotes
-  const out = [];
-  let cur = "";
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; }
-      else inQuotes = !inQuotes;
-    } else if (ch === ',' && !inQuotes) {
-      out.push(cur);
-      cur = "";
-    } else {
-      cur += ch;
-    }
-  }
-  out.push(cur);
-  return out;
-}
-
-function validateCSVRows(rows) {
-  if (!Array.isArray(rows) || rows.length === 0) {
-    return { ok: false, message: "No rows detected." };
-  }
-  if (rows.length < 5) {
-    return { ok: false, message: "Please provide at least 5 rows." };
-  }
   const relSet = new Set(relationships.map(r => r.toLowerCase()));
   const seen = new Set();
+  let error = "";
 
-  for (let i = 0; i < rows.length; i++) {
-    const r = rows[i];
-    const lineNo = i + 1;
-    if (!r.initials) return { ok: false, message: `Row ${lineNo}: "initials" is required.` };
-    if (!r.relationship) return { ok: false, message: `Row ${lineNo}: "relationship" is required.` };
-    if (!relSet.has(r.relationship.toLowerCase())) {
-      return { ok: false, message: `Row ${lineNo}: relationship "${r.relationship}" is not allowed.` };
+  // Must have at least 5 complete rows
+  if (complete.length < 5) {
+    error = "Please fill at least 5 rows (both columns).";
+  } else {
+    // Validate contents
+    for (let i = 0; i < complete.length; i++) {
+      const r = complete[i];
+      if (!relSet.has(r.relationship.toLowerCase())) {
+        error = `Invalid relationship: "${r.relationship}".`;
+        break;
+      }
+      const key = r.initials.toLowerCase();
+      if (seen.has(key)) {
+        error = `Duplicate initials: "${r.initials}".`;
+        break;
+      }
+      seen.add(key);
     }
-    const key = r.initials.toLowerCase();
-    if (seen.has(key)) {
-      return { ok: false, message: `Duplicate initials found: "${r.initials}". Use unique initials.` };
-    }
-    seen.add(key);
   }
-  return { ok: true, rows };
+
+  if (error) {
+    errEl.textContent = error;
+    nextBtn.style.display = 'none';
+  } else {
+    errEl.textContent = "";
+    nextBtn.style.display = 'inline-block';
+  }
+
+  msgEl.textContent = `${complete.length} valid row(s) detected.`;
+  return { ok: !error, rows: complete };
 }
 
-function proceedAfterCSV() {
+function proceedAfterGrid() {
+  const validated = validateGrid();
+  if (!validated.ok) return;
+
+  // Map to internal structure used by Phase 2
+  responses = validated.rows.map(r => ({ name: r.initials, relationship: r.relationship }));
+
   document.getElementById('phase1').style.display = 'none';
   document.getElementById('phase2').style.display = 'block';
   launchPhase2();
 }
 
-// --------------- Legacy name/relationship Q&A (left intact; unused) ---------------
-function showNameInput() { /* kept for compatibility; not used */ }
-function saveName() { /* kept for compatibility; not used */ }
-function showRelationshipSelect() { /* kept for compatibility; not used */ }
-function saveRelationship() { /* kept for compatibility; not used */ }
+// --------------- Legacy name/relationship Q&A (kept for compatibility; unused) ---------------
+function showNameInput() {}
+function saveName() {}
+function showRelationshipSelect() {}
+function saveRelationship() {}
 function endPhase1() {
   document.getElementById('phase1').style.display = 'none';
   document.getElementById('phase2').style.display = 'block';
