@@ -206,29 +206,61 @@ function readGridRows() {
 function validateGrid() {
   const msgEl = document.getElementById('grid-msg');
   const errEl = document.getElementById('grid-err');
-  const rows = readGridRows();
+  const body = document.getElementById('grid-body');
+  const trs = Array.from(body.querySelectorAll('tr'));
 
-  // Keep only filled rows for validation
-  const filled = rows.filter(r => r.initials !== "" || r.relationship !== "");
-  const complete = filled.filter(r => r.initials !== "" && r.relationship !== "");
+  // Read rows
+  const rows = trs.map(tr => {
+    const inputs = tr.querySelectorAll('input, select');
+    return {
+      initials: (inputs[0].value || "").trim(),
+      relationship: (inputs[1].value || "").trim(),
+      tr
+    };
+  });
+
+  // Reset row styles
+  trs.forEach(tr => { tr.style.outline = ''; });
+
+  // Classify rows
+  const complete = [];
+  const partial = [];
+  for (const r of rows) {
+    const hasInit = r.initials !== "";
+    const hasRel  = r.relationship !== "";
+    if (hasInit && hasRel) complete.push(r);
+    else if (hasInit || hasRel) partial.push(r); // one filled, one missing
+  }
+
+  // Highlight incomplete rows
+  partial.forEach(r => { r.tr.style.outline = '2px solid rgba(255,0,0,0.5)'; });
 
   const relSet = new Set(relationships.map(r => r.toLowerCase()));
   const seen = new Set();
   let error = "";
 
+  // No partials allowed: if they typed initials, they must choose relationship (and vice versa)
+  if (partial.length > 0) {
+    error = "Please complete or clear all highlighted rows (both initials and relationship).";
+  }
+
   // Must have at least 5 complete rows
-  if (complete.length < 5) {
+  if (!error && complete.length < 5) {
     error = "Please fill at least 5 rows (both columns).";
-  } else {
-    // Validate contents
+  }
+
+  // Validate contents of complete rows
+  if (!error) {
     for (let i = 0; i < complete.length; i++) {
       const r = complete[i];
       if (!relSet.has(r.relationship.toLowerCase())) {
+        r.tr.style.outline = '2px solid rgba(255,0,0,0.5)';
         error = `Invalid relationship: "${r.relationship}".`;
         break;
       }
       const key = r.initials.toLowerCase();
       if (seen.has(key)) {
+        r.tr.style.outline = '2px solid rgba(255,0,0,0.5)';
         error = `Duplicate initials: "${r.initials}".`;
         break;
       }
@@ -245,8 +277,9 @@ function validateGrid() {
   }
 
   msgEl.textContent = `${complete.length} valid row(s) detected.`;
-  return { ok: !error, rows: complete };
+  return { ok: !error, rows: complete.map(({ initials, relationship }) => ({ initials, relationship })) };
 }
+
 
 function proceedAfterGrid() {
   const validated = validateGrid();
